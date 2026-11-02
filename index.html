@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f7f3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Miu Miu">
+  <title>Miu Miu — Nhật ký chăm mèo</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/cat-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="Miu Miu trang chủ">
+        <span class="brand-icon">🐾</span>
+        <span class="brand-name">miu<span>miu</span><small>CAT CARE JOURNAL</small></span>
+      </a>
+      <div class="side-label">MENU CHÍNH</div>
+      <nav class="main-nav" aria-label="Điều hướng chính">
+        <button class="nav-link active" data-page="overview"><span>▦</span>Tổng quan</button>
+        <button class="nav-link" data-page="vaccines"><span>♡</span>Lịch tiêm chủng <i class="nav-count" id="vaccine-nav-count"></i></button>
+        <button class="nav-link" data-page="nutrition"><span>◉</span>Dinh dưỡng</button>
+        <button class="nav-link" data-page="finance"><span>↗</span>Tài chính</button>
+      </nav>
+      <div class="side-label cat-label">BÉ MÈO CỦA BẠN</div>
+      <button class="cat-side-card" id="profile-shortcut">
+        <span class="cat-avatar">🐈</span>
+        <span class="cat-side-info"><strong id="sidebar-cat-name">Miu</strong><small id="sidebar-cat-meta">Mèo mướp · 1 tuổi</small></span>
+        <span class="more-dots">•••</span>
+      </button>
+      <div class="sidebar-bottom">
+        <div class="tip-card"><span>✨ MẸO NHỎ</span><p>Một chút quan tâm mỗi ngày, một chiếc đuôi luôn ve vẩy.</p><span class="tip-cat">🐱</span></div>
+        <button class="nav-link sheet-connect-link" id="sheet-settings-button" data-action="sheet-settings"><span>▤</span><span class="sheet-connect-copy"><strong>Google Sheets</strong><small id="sheet-status-text">Chưa kết nối</small></span><span class="sheet-status-dot" id="sheet-status-dot"></span></button>
+        <button class="nav-link" data-page="profile"><span>⚙</span>Hồ sơ của bé</button>
+      </div>
+      <div class="sidebar-footer"><span class="online-dot"></span> Có thể cài lên iPhone</div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="menu-toggle" aria-label="Mở menu">☰</button>
+        <div class="breadcrumb">Không gian của <strong id="header-cat-name">Miu</strong><span> / </span><span id="today-label"></span></div>
+        <div class="top-actions">
+          <button class="sheet-header-button" data-action="sheet-settings"><span>▤</span> Google Sheets</button>
+          <button class="icon-button" id="notification-button" aria-label="Thông báo">♧<span class="notification-dot"></span></button>
+          <span class="top-divider"></span>
+          <button class="user-chip" data-page="profile"><span class="user-avatar">S</span><span><strong>Sen của Miu</strong><small>Chủ nhân yêu mèo</small></span><span class="chevron">⌄</span></button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <section class="page-view active" id="page-overview">
+          <div class="welcome-row">
+            <div><p class="eyebrow">THỨ HAI, NGÀY MỚI NHIỀU NIỀM VUI ☀️</p><h1>Chào sen, hôm nay <span>Miu</span> thế nào?</h1><p class="subheading">Một chút chăm sóc mỗi ngày, bé khỏe mạnh cả năm.</p></div>
+            <button class="primary-button" data-action="add-vaccine"><span>＋</span> Thêm lịch tiêm</button>
+          </div>
+          <div class="hero-card">
+            <div class="hero-copy"><span class="hero-pill"><span>✦</span> NHẬT KÝ CỦA MIU</span><h2>Nhà có mèo,<br>ngày nào cũng <em>vui!</em></h2><p>Theo dõi sức khỏe, bữa ăn và những khoản chi của bé — tất cả ở một nơi.</p><button class="hero-button" data-page="profile">Khám phá hồ sơ bé <span>→</span></button></div>
+            <div class="hero-art"><div class="sun-shape"></div><span class="hero-spark spark-one">✦</span><span class="hero-spark spark-two">✧</span><span class="hero-cat">🐈</span><span class="hero-heart">♥</span><div class="hero-caption">Miu · 1 tuổi</div></div>
+          </div>
+          <div class="section-heading"><div><h2>Mọi thứ của bé</h2><p>Tổng quan nhanh những điều sen cần nhớ.</p></div><button class="text-button" data-page="profile">Hồ sơ của bé <span>→</span></button></div>
+          <div class="stats-grid">
+            <button class="stat-card vaccine-stat" data-page="vaccines"><span class="stat-icon">♡</span><span class="stat-label">MŨI TIÊM SẮP TỚI</span><strong id="next-vaccine-date">--</strong><span class="stat-note" id="next-vaccine-name">Chưa có lịch tiêm</span><span class="stat-arrow">↗</span></button>
+            <button class="stat-card food-stat" data-page="nutrition"><span class="stat-icon">◉</span><span class="stat-label">BỮA ĂN HÔM NAY</span><strong id="meal-progress">0 <small>/ 3 bữa</small></strong><span class="stat-note">Đúng giờ, bé ăn ngon</span><span class="stat-arrow">↗</span></button>
+            <button class="stat-card money-stat" data-page="finance"><span class="stat-icon">↗</span><span class="stat-label">CHI TIÊU THÁNG NÀY</span><strong id="month-total">0 ₫</strong><span class="stat-note" id="month-compare">Theo dõi chi tiêu của bé</span><span class="stat-arrow">↗</span></button>
+          </div>
+          <div class="dashboard-grid">
+            <section class="panel upcoming-panel"><div class="panel-heading"><div><h3>Lịch chăm sóc sắp tới</h3><p>Đừng để lỡ những ngày quan trọng nhé.</p></div><button class="text-button" data-page="vaccines">Xem tất cả <span>→</span></button></div><div id="upcoming-list" class="upcoming-list"></div></section>
+            <section class="panel spend-panel"><div class="panel-heading"><div><h3>Chi tiêu của sen</h3><p>Tháng này bé đã tiêu tốn...</p></div><button class="mini-icon" data-page="finance" aria-label="Xem tài chính">↗</button></div><div class="spend-total" id="spend-total">0 ₫</div><div class="chart-wrap">            <div class="chart-y-labels"><span>500k</span><span>250k</span><span>0</span></div><div class="chart-content"><div class="chart-grid-lines"><i></i><i></i><i></i></div><svg class="spend-chart" viewBox="0 0 420 125" preserveAspectRatio="none" aria-label="Biểu đồ chi tiêu"><defs><linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f6a985" stop-opacity=".38"/><stop offset="100%" stop-color="#f6a985" stop-opacity="0"/></linearGradient></defs><path class="chart-area" d="M0,108 L140,108 L280,108 L420,108 L420,125 L0,125 Z"/><path class="chart-line" d="M0,108 L140,108 L280,108 L420,108"/><circle cx="420" cy="108" r="4"/></svg><div class="chart-months"><span>Tuần 1</span><span>Tuần 2</span><span>Tuần 3</span><span>Tuần 4</span></div></div></div><div class="chart-legend"><span><i></i> Chi tiêu của bé</span><span>Tháng này</span></div></section>
+          </div>
+          <div class="quick-actions"><span>LỐI TẮT CHO SEN</span><button data-action="add-transaction">＋ Ghi chi tiêu</button><button data-action="add-vaccine">＋ Thêm lịch tiêm</button><button data-page="nutrition">◉ Xem thực đơn hôm nay</button><button data-action="sheet-settings">▤ Kết nối Google Sheets</button></div>
+        </section>
+
+        <section class="page-view" id="page-vaccines">
+          <div class="page-title-row"><div><p class="eyebrow">SỨC KHỎE CỦA BÉ</p><h1>Lịch tiêm chủng <span>💉</span></h1><p class="subheading">Ghi nhớ từng mũi tiêm và lịch tái khám của bé.</p></div><button class="primary-button" data-action="add-vaccine"><span>＋</span> Thêm lịch tiêm</button></div>
+          <div class="notice-banner"><span>💡</span><div><strong>Sen nhớ nhé!</strong><p>Lịch tiêm tham khảo có thể khác nhau tùy tình trạng sức khỏe. Hãy hỏi bác sĩ thú y để được tư vấn lịch phù hợp nhất cho bé.</p></div></div>
+          <div class="section-heading"><div><h2>Lịch của <span class="cat-name-inline">Miu</span></h2><p id="vaccine-summary">Các mũi tiêm và lịch chăm sóc</p></div><select class="select-filter" id="vaccine-filter" aria-label="Lọc lịch tiêm"><option value="all">Tất cả lịch</option><option value="upcoming">Sắp tới</option><option value="done">Đã hoàn thành</option></select></div>
+          <div class="panel table-panel"><div id="vaccine-list" class="record-list"></div></div>
+        </section>
+
+        <section class="page-view" id="page-nutrition">
+          <div class="page-title-row"><div><p class="eyebrow">BỮA NGON MỖI NGÀY</p><h1>Dinh dưỡng <span>🥣</span></h1><p class="subheading">Một chế độ ăn phù hợp giúp bé khỏe mạnh và vui vẻ.</p></div><button class="primary-button" data-action="add-meal"><span>＋</span> Ghi bữa ăn</button></div>
+          <div class="nutrition-highlight"><div><span class="hero-pill">GỢI Ý RIÊNG CHO BÉ</span><h2>Khẩu phần của <span class="cat-name-inline">Miu</span></h2><p id="nutrition-summary">Dựa trên tuổi và cân nặng hiện tại.</p></div><div class="calorie-box"><strong id="calorie-target">--</strong><span>kcal / ngày ước tính</span></div></div>
+          <div class="notice-banner"><span>🌿</span><div><strong>Khẩu phần chỉ mang tính tham khảo.</strong><p>Nhu cầu thực tế còn tùy giống mèo, mức vận động, thể trạng và loại thức ăn. Trao đổi với bác sĩ thú y để điều chỉnh phù hợp.</p></div></div>
+          <div class="nutrition-grid"><section class="panel"><div class="panel-heading"><div><h3>Lịch ăn trong ngày</h3><p id="meal-plan-label">Gợi ý chia thành 3 bữa nhỏ.</p></div><span class="today-badge">HÔM NAY</span></div><div id="meal-list" class="meal-list"></div></section><section class="panel nutrition-guide"><div class="panel-heading"><div><h3>Thông tin thể trạng</h3><p>Điều chỉnh theo độ tuổi và cân nặng.</p></div></div><div class="body-stats"><div><span>ĐỘ TUỔI</span><strong id="nutrition-age">--</strong></div><div><span>CÂN NẶNG</span><strong id="nutrition-weight">--</strong></div><div><span>GIAI ĐOẠN</span><strong id="nutrition-stage">--</strong></div></div>          <div class="guide-note"><span>🐾</span><p>Nhu cầu ăn thay đổi theo độ tuổi và thể trạng. Luôn để sẵn nước sạch cho bé nhé!</p></div><button class="outline-button" data-page="profile">Cập nhật hồ sơ bé <span>→</span></button></section></div>
+        </section>
+
+        <section class="page-view" id="page-finance">
+          <div class="page-title-row"><div><p class="eyebrow">SEN CHĂM BÉ, BÉ CHĂM SEN</p><h1>Tài chính của sen <span>💰</span></h1><p class="subheading">Theo dõi chi phí chăm bé để luôn chủ động.</p></div><button class="primary-button" data-action="add-transaction"><span>＋</span> Ghi giao dịch</button></div>
+          <div class="finance-cards"><article class="finance-total-card"><span>CHI TIÊU THÁNG NÀY</span><strong id="finance-month-total">0 ₫</strong><small>Chỉ tính các khoản chi trong tháng hiện tại</small><span class="finance-decoration">♡</span></article><article class="finance-summary-card"><span>ĐÃ GHI GIAO DỊCH</span><strong id="transaction-count">0 khoản</strong><small>Đồng bộ lên Sheet khi sen kết nối</small><span class="summary-icon">▤</span></article></div>
+          <div class="section-heading"><div><h2>Sổ thu chi</h2><p>Các khoản chi cho hoàng thượng.</p></div><select class="select-filter" id="finance-filter" aria-label="Lọc giao dịch"><option value="all">Tất cả giao dịch</option><option value="expense">Chi tiêu</option><option value="income">Khoản thu</option></select></div>
+          <div class="panel table-panel"><div id="transaction-list" class="record-list"></div></div>
+        </section>
+
+        <section class="page-view" id="page-profile">
+          <div class="page-title-row"><div><p class="eyebrow">THÀNH VIÊN ĐÁNG YÊU NHẤT NHÀ</p><h1>Hồ sơ của bé <span>🐈</span></h1><p class="subheading">Thông tin này giúp gợi ý chăm sóc phù hợp hơn.</p></div></div>
+          <div class="profile-layout"><section class="panel profile-card"><div class="profile-avatar">🐈</div><span class="profile-kicker">HOÀNG THƯỢNG</span><h2 id="profile-cat-name">Miu</h2><p id="profile-cat-bio">Mèo mướp · Thành viên 4 chân của gia đình</p><div class="profile-facts"><div><span>ĐỘ TUỔI</span><strong id="profile-age">--</strong></div><div><span>CÂN NẶNG</span><strong id="profile-weight">--</strong></div><div><span>GIỚI TÍNH</span><strong id="profile-gender">--</strong></div></div><button class="primary-button" id="edit-profile-button">✎ Chỉnh sửa hồ sơ</button></section><section class="panel profile-tips"><h3>Chăm bé thật tốt nhé!</h3><p>Hồ sơ chính xác giúp sen theo dõi lịch chăm sóc và tham khảo khẩu phần phù hợp hơn.</p><div class="tip-row"><span>♡</span><div><strong>Khám sức khỏe định kỳ</strong><small>Nhờ bác sĩ thú y tư vấn lịch phù hợp với bé.</small></div></div><div class="tip-row"><span>◉</span><div><strong>Theo dõi cân nặng</strong><small>Cập nhật hồ sơ khi cân nặng của bé thay đổi.</small></div></div><div class="tip-row"><span>⌂</span><div><strong>Dữ liệu riêng tư</strong><small>Lưu trên thiết bị và Google Sheet sen đã kết nối.</small></div></div></section></div>
+        </section>
+        <footer class="page-footer"><span>Made with <b>♥</b> for every cat & their human</span><span>MIUMIU · NHẬT KÝ CHĂM MÈO</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="app-dialog" class="app-dialog"><form id="dialog-form"><div class="dialog-heading"><div><span class="eyebrow" id="dialog-eyebrow">THÊM THÔNG TIN</span><h2 id="dialog-title">Thêm mới</h2></div><button type="button" class="dialog-close" id="dialog-close" aria-label="Đóng">×</button></div><div id="dialog-fields" class="dialog-fields"></div><div class="dialog-actions"><button type="button" class="outline-button" id="dialog-cancel">Để sau</button><button type="submit" class="primary-button"><span id="dialog-submit-label">Lưu thông tin</span> <span>→</span></button></div></form></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="sheets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
