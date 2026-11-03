@@ -1,6 +1,10 @@
 const STORAGE_KEY = "miumiu-care-v2";
 const SHEET_CONFIG_KEY = "miumiu-sheet-config-v1";
 const PENDING_SYNC_KEY = "miumiu-sheet-pending-v1";
+const DEFAULT_SHEET_CONFIG = Object.freeze({
+  spreadsheetId: "1mH7ED4KA5mIn0XwgV_pLl_OUi0Ae6glOG3XB_3Xb3ME",
+  clientId: "1088312332581-7njumujovcs200m601v9n0h46b4ogllj.apps.googleusercontent.com"
+});
 const today = new Date();
 const localDate = (date = new Date()) => {
   const y = date.getFullYear();
@@ -66,10 +70,10 @@ function loadState() {
 function loadSheetConfig() {
   try {
     const saved = localStorage.getItem(SHEET_CONFIG_KEY);
-    return saved ? JSON.parse(saved) : null;
+    return saved ? { ...DEFAULT_SHEET_CONFIG, ...JSON.parse(saved) } : { ...DEFAULT_SHEET_CONFIG };
   } catch (error) {
     console.error("Không thể đọc cấu hình Google Sheets:", error);
-    return null;
+    return { ...DEFAULT_SHEET_CONFIG };
   }
 }
 function persistLocalState() {
@@ -381,8 +385,8 @@ function openDialog(kind) {
   if (kind === "sheet-settings") {
     eyebrow.textContent = "ĐỒNG BỘ DỮ LIỆU RIÊNG TƯ";
     title.textContent = "Kết nối Google Sheets";
-    fields.innerHTML = field("spreadsheetId", "Link hoặc ID Google Sheet", "text", sheetConfig?.spreadsheetId || "", { placeholder: "Dán link Google Sheets của sen" })
-      + field("clientId", "Google OAuth Client ID", "text", sheetConfig?.clientId || "", { placeholder: "…apps.googleusercontent.com" })
+    fields.innerHTML = field("spreadsheetId", "Link hoặc ID Google Sheet", "text", sheetConfig.spreadsheetId, { placeholder: "Dán link Google Sheets của sen" })
+      + field("clientId", "Google OAuth Client ID", "text", sheetConfig.clientId, { placeholder: "…apps.googleusercontent.com" })
       + `<div class="sheet-setup-note"><strong>Quyền riêng tư</strong><p>App đăng nhập Google và ghi trực tiếp vào Sheet của sen; không gửi dữ liệu qua máy chủ trung gian. Cần bật Google Sheets API và dùng địa chỉ HTTPS hoặc localhost.</p><a href="README.md" target="_blank" rel="noopener">Xem hướng dẫn thiết lập và cài lên iPhone →</a></div>`;
     document.getElementById("dialog-submit-label").textContent = "Đăng nhập & đồng bộ";
   } else if (kind === "vaccine") {
@@ -518,6 +522,9 @@ document.getElementById("profile-shortcut").addEventListener("click", () => setP
 document.getElementById("today-label").textContent = new Intl.DateTimeFormat("vi-VN", { weekday: "long", day: "numeric", month: "long" }).format(today);
 setSheetStatus(sheetConfig ? "pending" : "local", sheetConfig ? "Cần đăng nhập Google" : "Chỉ lưu trên thiết bị");
 renderAll();
+window.addEventListener("online", () => {
+  if (sheetAccessToken && sheetConfig && pendingSheetChanges) saveState();
+});
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
   navigator.serviceWorker.register("./service-worker.js").catch((error) => {
     console.error("Không thể đăng ký chế độ PWA:", error);

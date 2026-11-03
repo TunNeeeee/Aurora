@@ -4,15 +4,15 @@ Website có thể cài lên iPhone dưới dạng PWA. Dữ liệu hồ sơ, l�
 
 ## Kết nối Google Sheets
 
-1. Tạo một Google Sheet mới và mở nó bằng tài khoản Google sẽ dùng trong ứng dụng.
-2. Trong [Google Cloud Console](https://console.cloud.google.com/), tạo/chọn một project, bật **Google Sheets API**, rồi cấu hình màn hình OAuth consent. Nếu ứng dụng đang ở chế độ kiểm thử, thêm tài khoản Google của bạn vào danh sách test users.
-3. Tạo OAuth Client ID loại **Web application**. Thêm chính xác origin của nơi bạn sẽ lưu trữ ứng dụng vào **Authorized JavaScript origins** (ví dụ `https://ten-cua-ban.github.io`). Không cần redirect URI. Client ID có dạng `...apps.googleusercontent.com`.
+1. Dùng Google Sheet có ID mặc định `1mH7ED4KA5mIn0XwgV_pLl_OUi0Ae6glOG3XB_3Xb3ME` và mở nó bằng tài khoản Google sẽ dùng trong ứng dụng.
+2. Trong [Google Cloud Console](https://console.cloud.google.com/), bật **Google Sheets API** cho project của OAuth Client ID mặc định `1088312332581-7njumujovcs200m601v9n0h46b4ogllj.apps.googleusercontent.com`, rồi cấu hình màn hình OAuth consent. Nếu ứng dụng đang ở chế độ kiểm thử, thêm tài khoản Google của bạn vào danh sách test users.
+3. Trong cấu hình OAuth Client ID loại **Web application**, thêm chính xác origin của nơi bạn lưu trữ ứng dụng vào **Authorized JavaScript origins** (ví dụ `https://ten-cua-ban.github.io`). Không cần redirect URI. Nếu dùng project khác, nhập Client ID mới trong cửa sổ Google Sheets của ứng dụng.
 4. Đưa toàn bộ thư mục ứng dụng lên một dịch vụ lưu trữ HTTPS. Ví dụ với GitHub Pages: tạo repository, tải các file/thư mục của ứng dụng lên, vào **Settings → Pages**, chọn nhánh và thư mục xuất bản. Dùng URL HTTPS Pages làm Authorized JavaScript origin ở bước 3. Không mở ứng dụng bằng `file://` để đăng nhập Google.
-5. Mở ứng dụng đã xuất bản, chọn **Google Sheets** ở thanh bên. Dán link Sheet và OAuth Client ID, sau đó đăng nhập, chọn tài khoản và chấp thuận quyền truy cập Sheets. Ứng dụng sẽ tự tạo các tab `Cats`, `Vaccines`, `Transactions`, `Meals`; Sheet trống sẽ được khởi tạo bằng dữ liệu hiện có trên thiết bị.
+5. Mở ứng dụng đã xuất bản, chọn **Google Sheets**, kiểm tra cấu hình đã điền sẵn, rồi đăng nhập, chọn tài khoản và chấp thuận quyền truy cập Sheets. Ứng dụng sẽ tự tạo các tab `Cats`, `Vaccines`, `Transactions`, `Meals`; Sheet trống sẽ được khởi tạo bằng dữ liệu hiện có trên thiết bị.
 
 Ứng dụng dùng OAuth trong trình duyệt và gọi Google Sheets API trực tiếp. Không cần Apps Script, API key hay máy chủ lưu trữ dữ liệu trung gian. Client ID là thông tin công khai; **không đặt mật khẩu hoặc client secret của Google trong ứng dụng**.
 
-Khi có mạng và đã cấp quyền, thay đổi được đồng bộ lên Sheet. Google chỉ cấp access token tạm thời trong phiên trình duyệt, vì vậy nếu mở lại ứng dụng mà trạng thái báo cần đăng nhập thì kết nối lại để đồng bộ. Khi ngoại tuyến, thay đổi vẫn lưu ở thiết bị. Nếu có dữ liệu chưa đồng bộ và Sheet đã có dữ liệu, ứng dụng hỏi sen chọn dữ liệu trên thiết bị hay trên Sheet trước khi tiếp tục.
+Sau khi đăng nhập, thay đổi được tự động đồng bộ lên Sheet; nếu tạm mất mạng, ứng dụng sẽ thử đồng bộ lại khi mạng trở lại. Google chỉ cấp access token tạm thời trong phiên trình duyệt, vì vậy nếu mở lại ứng dụng mà trạng thái báo cần đăng nhập thì chạm **Google Sheets** và đăng nhập lại. Khi ngoại tuyến, thay đổi vẫn lưu ở thiết bị. Nếu có dữ liệu chưa đồng bộ và Sheet đã có dữ liệu, ứng dụng hỏi sen chọn dữ liệu trên thiết bị hay trên Sheet trước khi tiếp tục.
 
 ## Cài lên iPhone
 
