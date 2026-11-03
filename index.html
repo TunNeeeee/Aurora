@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f8f7f3">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -76,7 +76,7 @@
             <section class="panel upcoming-panel"><div class="panel-heading"><div><h3>Lịch chăm sóc sắp tới</h3><p>Đừng để lỡ những ngày quan trọng nhé.</p></div><button class="text-button" data-page="vaccines">Xem tất cả <span>→</span></button></div><div id="upcoming-list" class="upcoming-list"></div></section>
             <section class="panel spend-panel"><div class="panel-heading"><div><h3>Chi tiêu của sen</h3><p>Tháng này bé đã tiêu tốn...</p></div><button class="mini-icon" data-page="finance" aria-label="Xem tài chính">↗</button></div><div class="spend-total" id="spend-total">0 ₫</div><div class="chart-wrap">            <div class="chart-y-labels"><span>500k</span><span>250k</span><span>0</span></div><div class="chart-content"><div class="chart-grid-lines"><i></i><i></i><i></i></div><svg class="spend-chart" viewBox="0 0 420 125" preserveAspectRatio="none" aria-label="Biểu đồ chi tiêu"><defs><linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f6a985" stop-opacity=".38"/><stop offset="100%" stop-color="#f6a985" stop-opacity="0"/></linearGradient></defs><path class="chart-area" d="M0,108 L140,108 L280,108 L420,108 L420,125 L0,125 Z"/><path class="chart-line" d="M0,108 L140,108 L280,108 L420,108"/><circle cx="420" cy="108" r="4"/></svg><div class="chart-months"><span>Tuần 1</span><span>Tuần 2</span><span>Tuần 3</span><span>Tuần 4</span></div></div></div><div class="chart-legend"><span><i></i> Chi tiêu của bé</span><span>Tháng này</span></div></section>
           </div>
-          <div class="quick-actions"><span>LỐI TẮT CHO SEN</span><button data-action="add-transaction">＋ Ghi chi tiêu</button><button data-action="add-vaccine">＋ Thêm lịch tiêm</button><button data-page="nutrition">◉ Xem thực đơn hôm nay</button><button data-action="sheet-settings">▤ Kết nối Google Sheets</button></div>
+          <div class="quick-actions"><span>LỐI TẮT CHO SEN</span><button data-action="add-transaction">＋ Ghi chi tiêu</button><button data-action="add-vaccine">＋ Thêm lịch tiêm</button><button data-page="nutrition">◉ Xem thực đơn hôm nay</button></div>
         </section>
 
         <section class="page-view" id="page-vaccines">
@@ -94,7 +94,7 @@
         </section>
 
         <section class="page-view" id="page-finance">
-          <div class="page-title-row"><div><p class="eyebrow">SEN CHĂM BÉ, BÉ CHĂM SEN</p><h1>Tài chính của sen <span>💰</span></h1><p class="subheading">Theo dõi chi phí chăm bé để luôn chủ động.</p></div><button class="primary-button" data-action="add-transaction"><span>＋</span> Ghi giao dịch</button></div>
+          <div class="page-title-row"><div><p class="eyebrow">SEN CHĂM BÉ, BÉ CHĂM SEN</p><h1>Tài chính của sen <span>💰</span></h1><p class="subheading">Theo dõi chi phí chăm bé để luôn chủ động.</p></div><div class="finance-actions"><button class="primary-button" data-action="scan-payment-qr">▦ Quét QR thanh toán</button><button class="outline-button" data-action="add-transaction">＋ Ghi thủ công</button></div></div>
           <div class="finance-cards"><article class="finance-total-card"><span>CHI TIÊU THÁNG NÀY</span><strong id="finance-month-total">0 ₫</strong><small>Chỉ tính các khoản chi trong tháng hiện tại</small><span class="finance-decoration">♡</span></article><article class="finance-summary-card"><span>ĐÃ GHI GIAO DỊCH</span><strong id="transaction-count">0 khoản</strong><small>Đồng bộ lên Sheet khi sen kết nối</small><span class="summary-icon">▤</span></article></div>
           <div class="section-heading"><div><h2>Sổ thu chi</h2><p>Các khoản chi cho hoàng thượng.</p></div><select class="select-filter" id="finance-filter" aria-label="Lọc giao dịch"><option value="all">Tất cả giao dịch</option><option value="expense">Chi tiêu</option><option value="income">Khoản thu</option></select></div>
           <div class="panel table-panel"><div id="transaction-list" class="record-list"></div></div>
@@ -107,11 +107,19 @@
         <footer class="page-footer"><span>Made with <b>♥</b> for every cat & their human</span><span>MIUMIU · NHẬT KÝ CHĂM MÈO</span></footer>
       </div>
     </main>
+    <nav class="mobile-tab-bar" aria-label="Điều hướng chính">
+      <button class="mobile-tab active" data-page="overview"><span>▦</span><small>Tổng quan</small></button>
+      <button class="mobile-tab" data-page="vaccines"><span>♡</span><small>Lịch tiêm</small></button>
+      <button class="mobile-tab" data-page="nutrition"><span>◉</span><small>Dinh dưỡng</small></button>
+      <button class="mobile-tab" data-page="finance"><span>↗</span><small>Tài chính</small></button>
+      <button class="mobile-tab" data-page="profile"><span>⚙</span><small>Hồ sơ</small></button>
+    </nav>
   </div>
 
   <dialog id="app-dialog" class="app-dialog"><form id="dialog-form"><div class="dialog-heading"><div><span class="eyebrow" id="dialog-eyebrow">THÊM THÔNG TIN</span><h2 id="dialog-title">Thêm mới</h2></div><button type="button" class="dialog-close" id="dialog-close" aria-label="Đóng">×</button></div><div id="dialog-fields" class="dialog-fields"></div><div class="dialog-actions"><button type="button" class="outline-button" id="dialog-cancel">Để sau</button><button type="submit" class="primary-button"><span id="dialog-submit-label">Lưu thông tin</span> <span>→</span></button></div></form></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js" defer></script>
   <script src="sheets.js"></script>
   <script src="app.js"></script>
 </body>

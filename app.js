@@ -48,6 +48,8 @@ let sheetAccessToken = null;
 let sheetTokenClient = null;
 let sheetSyncQueue = Promise.resolve();
 let localRevision = 0;
+let qrStream = null;
+let qrAnimationFrame = null;
 let pendingSheetChanges = localStorage.getItem(PENDING_SYNC_KEY) === "true";
 let sheetConfig = loadSheetConfig();
 
@@ -285,6 +287,7 @@ function setPage(page) {
   activePage = page;
   document.querySelectorAll(".page-view").forEach((el) => el.classList.toggle("active", el.id === `page-${page}`));
   document.querySelectorAll(".nav-link[data-page]").forEach((el) => el.classList.toggle("active", el.dataset.page === page));
+  document.querySelectorAll(".mobile-tab").forEach((el) => el.classList.toggle("active", el.dataset.page === page));
   document.getElementById("sidebar").classList.remove("open");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -295,10 +298,115 @@ function showToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
 }
-function spreadsheetIdFromInput(value) {
-  const input = value.trim();
-  const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
-  return match ? match[1] : input;
+function stopQrScanner() {
+  if (qrAnimationFrame !== null) cancelAnimationFrame(qrAnimationFrame);
+  qrAnimationFrame = null;
+  if (qrStream) qrStream.getTracks().forEach((track) => track.stop());
+  qrStream = null;
+  const video = document.getElementById("qr-video");
+  if (video) video.srcObject = null;
+}
+function parseQrFields(value) {
+  const fields = {};
+  const bytes = new TextEncoder().encode(value);
+  const decoder = new TextDecoder();
+  for (let index = 0; index + 4 <= bytes.length;) {
+    const tag = decoder.decode(bytes.slice(index, index + 2));
+    const length = Number(decoder.decode(bytes.slice(index + 2, index + 4)));
+    if (!/^\d{2}$/.test(tag) || !Number.isInteger(length) || length < 0 || index + 4 + length > bytes.length) break;
+    fields[tag] = decoder.decode(bytes.slice(index + 4, index + 4 + length));
+    index += 4 + length;
+  }
+  return fields;
+}
+function applyScannedQr(value) {
+  stopQrScanner();
+  const status = document.getElementById("qr-scan-status");
+  const fields = parseQrFields(value);
+  const amount = Number(fields["54"]);
+  const title = fields["59"] || "";
+  const amountInput = document.getElementById("amount");
+  const titleInput = document.getElementById("title");
+  if (amountInput && Number.isFinite(amount) && amount > 0) amountInput.value = String(amount);
+  if (titleInput && title) titleInput.value = `Thanh toán ${title}`;
+  if (status) status.textContent = amountInput?.value
+    ? `Đã đọc mã QR${title ? ` của ${title}` : ""}. Kiểm tra số tiền trước khi tiếp tục.`
+    : "Đã đọc mã QR. Mã không có số tiền; vui lòng nhập số tiền thủ công.";
+}
+async function startQrScanner() {
+  const video = document.getElementById("qr-video");
+  const status = document.getElementById("qr-scan-status");
+  if (!video || !status) return;
+  if (typeof window.jsQR !== "function") {
+    status.textContent = "Không tải được bộ đọc QR. Kiểm tra kết nối mạng rồi thử lại.";
+    return;
+  }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    status.textContent = "Trình duyệt không hỗ trợ camera. Chọn ảnh QR bên dưới để quét.";
+    return;
+  }
+  try {
+    qrStream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" } } });
+    video.srcObject = qrStream;
+    await video.play();
+    status.textContent = "Đưa mã QR vào khung hình.";
+    const canvas = document.getElementById("qr-canvas");
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const scanFrame = () => {
+      if (!qrStream) return;
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        qrAnimationFrame = requestAnimationFrame(scanFrame);
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const image = context.getImageData(0, 0, canvas.width, canvas.height);
+      const result = window.jsQR(image.data, image.width, image.height, { inversionAttempts: "dontInvert" });
+      if (result) {
+        applyScannedQr(result.data);
+        return;
+      }
+      qrAnimationFrame = requestAnimationFrame(scanFrame);
+    };
+    qrAnimationFrame = requestAnimationFrame(scanFrame);
+  } catch (error) {
+    console.error("Không thể mở camera để quét mã QR:", error);
+    status.textContent = "Không mở được camera. Hãy cấp quyền camera hoặc chọn ảnh QR bên dưới.";
+  }
+}
+async function decodeQrImage(file) {
+  const status = document.getElementById("qr-scan-status");
+  if (typeof window.jsQR !== "function") {
+    status.textContent = "Không tải được bộ đọc QR. Kiểm tra kết nối mạng rồi thử lại.";
+    return;
+  }
+  try {
+    const image = new Image();
+    const imageUrl = URL.createObjectURL(file);
+    try {
+      image.src = imageUrl;
+      await image.decode();
+      const canvas = document.getElementById("qr-canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+      const result = window.jsQR(pixels.data, pixels.width, pixels.height, { inversionAttempts: "attemptBoth" });
+      if (result) applyScannedQr(result.data);
+      else status.textContent = "Không tìm thấy mã QR trong ảnh. Hãy thử chụp lại rõ nét hơn.";
+    } finally {
+      URL.revokeObjectURL(imageUrl);
+    }
+  } catch (error) {
+    console.error("Không thể đọc ảnh mã QR:", error);
+    status.textContent = "Không đọc được ảnh này. Hãy chọn ảnh QR khác.";
+  }
+}
+function openMoMo() {
+  stopQrScanner();
+  window.location.href = "momo://";
 }
 function connectToGoogleSheets() {
   if (!sheetConfig) {
@@ -384,11 +492,9 @@ function openDialog(kind) {
   document.getElementById("dialog-form").dataset.kind = kind;
   if (kind === "sheet-settings") {
     eyebrow.textContent = "ĐỒNG BỘ DỮ LIỆU RIÊNG TƯ";
-    title.textContent = "Kết nối Google Sheets";
-    fields.innerHTML = field("spreadsheetId", "Link hoặc ID Google Sheet", "text", sheetConfig.spreadsheetId, { placeholder: "Dán link Google Sheets của sen" })
-      + field("clientId", "Google OAuth Client ID", "text", sheetConfig.clientId, { placeholder: "…apps.googleusercontent.com" })
-      + `<div class="sheet-setup-note"><strong>Quyền riêng tư</strong><p>App đăng nhập Google và ghi trực tiếp vào Sheet của sen; không gửi dữ liệu qua máy chủ trung gian. Cần bật Google Sheets API và dùng địa chỉ HTTPS hoặc localhost.</p><a href="README.md" target="_blank" rel="noopener">Xem hướng dẫn thiết lập và cài lên iPhone →</a></div>`;
-    document.getElementById("dialog-submit-label").textContent = "Đăng nhập & đồng bộ";
+    title.textContent = "Đồng bộ Google Sheets";
+    fields.innerHTML = `<div class="sheet-setup-note"><strong>${sheetAccessToken ? "Tự động đồng bộ đang bật" : "Cần đăng nhập Google"}</strong><p>${sheetAccessToken ? "Mọi thay đổi sẽ tự lưu lên Sheet. Không cần bấm nút đồng bộ." : "Đăng nhập một lần để bật đồng bộ tự động. Google có thể yêu cầu đăng nhập lại khi phiên hết hạn."}</p></div>`;
+    document.getElementById("dialog-submit-label").textContent = sheetAccessToken ? "Đóng" : "Đăng nhập";
   } else if (kind === "vaccine") {
     document.getElementById("dialog-submit-label").textContent = "Lưu thông tin";
     eyebrow.textContent = "SỨC KHỎE CỦA BÉ";
@@ -399,6 +505,18 @@ function openDialog(kind) {
     eyebrow.textContent = "SỔ THU CHI CỦA SEN";
     title.textContent = "Ghi giao dịch mới";
     fields.innerHTML = field("title", "Tên khoản thu / chi", "text", "", { placeholder: "VD: Mua thức ăn cho bé" }) + field("type", "Loại giao dịch", "select", "expense", { choices: [["expense", "Chi tiêu"], ["income", "Khoản thu"]] }) + field("category", "Danh mục", "select", "Thức ăn", { choices: [["Thức ăn", "Thức ăn"], ["Thú y", "Thú y"], ["Vệ sinh", "Vệ sinh"], ["Đồ chơi", "Đồ chơi"], ["Phụ kiện", "Phụ kiện"], ["Khác", "Khác"]] }) + field("amount", "Số tiền (₫)", "number", "", { min: "1", step: "1", placeholder: "VD: 150000" }) + field("date", "Ngày giao dịch", "date", localDate()) + field("note", "Ghi chú", "text", "", { required: false, placeholder: "Ghi chú thêm (nếu có)" });
+  } else if (kind === "qr-transaction") {
+    document.getElementById("dialog-submit-label").textContent = "Đã thanh toán · lưu";
+    eyebrow.textContent = "THANH TOÁN QUA MOMO";
+    title.textContent = "Quét mã QR ngân hàng";
+    fields.innerHTML = `<div class="qr-scanner"><video id="qr-video" playsinline muted aria-label="Camera quét mã QR thanh toán"></video><canvas id="qr-canvas" hidden></canvas><p id="qr-scan-status" role="status">Đang bật camera để quét mã QR.</p><button class="outline-button" type="button" id="qr-retry">Bật camera</button><label class="qr-photo-label" for="qr-photo">Hoặc chọn ảnh QR</label><input id="qr-photo" type="file" accept="image/*" capture="environment"></div>`
+      + `<div class="qr-payment-note">Kiểm tra số tiền và loại giao dịch rồi mở MoMo. MoMo có thể không nhận sẵn mã vừa quét; hãy làm theo hướng dẫn trong MoMo. Quay lại đây và chỉ bấm lưu sau khi xác nhận giao dịch thành công.</div>`
+      + field("title", "Nội dung", "text", "", { placeholder: "VD: Thanh toán cửa hàng" })
+      + field("type", "Loại giao dịch", "select", "expense", { choices: [["expense", "Chi tiêu"], ["income", "Khoản thu"]] })
+      + field("category", "Danh mục", "select", "Khác", { choices: [["Thức ăn", "Thức ăn"], ["Thú y", "Thú y"], ["Vệ sinh", "Vệ sinh"], ["Đồ chơi", "Đồ chơi"], ["Phụ kiện", "Phụ kiện"], ["Khác", "Khác"]] })
+      + field("amount", "Số tiền (₫)", "number", "", { min: "1", step: "1", placeholder: "Nhập nếu mã QR không có số tiền" })
+      + field("date", "Ngày giao dịch", "date", localDate())
+      + `<button class="outline-button momo-launch" type="button" id="momo-launch">Mở MoMo</button>`;
   } else if (kind === "meal") {
     document.getElementById("dialog-submit-label").textContent = "Lưu thông tin";
     eyebrow.textContent = "BỮA NGON CỦA BÉ";
@@ -411,8 +529,10 @@ function openDialog(kind) {
     fields.innerHTML = field("name", "Tên gọi ở nhà", "text", state.cat.name) + field("breed", "Giống mèo", "text", state.cat.breed, { placeholder: "VD: Mèo mướp" }) + field("birthDate", "Ngày sinh (ước tính)", "date", state.cat.birthDate, { hint: "Nếu không biết ngày sinh chính xác, sen có thể nhập ngày ước tính." }) + field("weight", "Cân nặng (kg)", "number", state.cat.weight, { min: "0.1", step: "0.1" }) + field("gender", "Giới tính", "select", state.cat.gender, { choices: [["Cái", "Cái"], ["Đực", "Đực"], ["Chưa rõ", "Chưa rõ"]] });
   }
   dialog.showModal();
+  if (kind === "qr-transaction") void startQrScanner();
 }
 function closeDialog() {
+  stopQrScanner();
   document.getElementById("app-dialog").close();
 }
 function handleSubmit(event) {
@@ -422,35 +542,21 @@ function handleSubmit(event) {
   const data = Object.fromEntries(new FormData(form).entries());
   const kind = form.dataset.kind;
   if (kind === "sheet-settings") {
-    const spreadsheetId = spreadsheetIdFromInput(data.spreadsheetId);
-    const clientId = data.clientId.trim();
-    if (!spreadsheetId || !clientId) {
-      showToast("Sen nhập link Google Sheet và OAuth Client ID nhé.");
-      return;
-    }
-    sheetConfig = { spreadsheetId, clientId };
-    try {
-      localStorage.setItem(SHEET_CONFIG_KEY, JSON.stringify(sheetConfig));
-    } catch (error) {
-      console.error("Không thể lưu cấu hình Google Sheets:", error);
-      showToast("Không thể lưu cấu hình. Sen hãy kiểm tra dung lượng trình duyệt nhé.");
-      return;
-    }
     closeDialog();
-    connectToGoogleSheets();
+    if (!sheetAccessToken) connectToGoogleSheets();
     return;
   }
-  if (kind === "vaccine") {
-    state.vaccines.push({ id: crypto.randomUUID(), name: data.name.trim(), date: data.date, clinic: data.clinic.trim(), note: data.note.trim(), done: false });
-    showToast("Đã thêm lịch chăm sóc cho bé!");
-  } else if (kind === "transaction") {
+  if (kind === "qr-transaction" || kind === "transaction") {
     const amount = Number(data.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
       showToast("Sen nhập số tiền lớn hơn 0 nhé.");
       return;
     }
-    state.transactions.push({ id: crypto.randomUUID(), title: data.title.trim(), category: data.category, amount, date: data.date, type: data.type, note: data.note.trim() });
-    showToast("Đã lưu giao dịch!");
+    state.transactions.push({ id: crypto.randomUUID(), title: data.title.trim() || "Giao dịch MoMo", category: data.category, amount, date: data.date, type: data.type, note: "" });
+    showToast(kind === "qr-transaction" ? "Đã ghi nhận giao dịch sen xác nhận thành công." : "Đã lưu giao dịch!");
+  } else if (kind === "vaccine") {
+    state.vaccines.push({ id: crypto.randomUUID(), name: data.name.trim(), date: data.date, clinic: data.clinic.trim(), note: data.note.trim(), done: false });
+    showToast("Đã thêm lịch chăm sóc cho bé!");
   } else if (kind === "meal") {
     state.meals.push({ id: crypto.randomUUID(), time: data.time, title: data.title.trim(), detail: data.detail.trim(), emoji: "🥣", done: false, completedDate: "" });
     state.meals.sort((a, b) => a.time.localeCompare(b.time));
@@ -474,9 +580,12 @@ document.addEventListener("click", (event) => {
   const actionButton = event.target.closest("[data-action]");
   if (actionButton) {
     if (actionButton.dataset.action === "sheet-settings") openDialog("sheet-settings");
+    else if (actionButton.dataset.action === "scan-payment-qr") openDialog("qr-transaction");
     else openDialog(actionButton.dataset.action.replace("add-", ""));
     return;
   }
+  if (event.target.closest("#momo-launch")) { openMoMo(); return; }
+  if (event.target.closest("#qr-retry")) { stopQrScanner(); void startQrScanner(); return; }
   const vaccineDone = event.target.closest("[data-vaccine-done]");
   if (vaccineDone) {
     const item = state.vaccines.find((entry) => entry.id === vaccineDone.dataset.vaccineDone);
@@ -513,8 +622,12 @@ document.addEventListener("click", (event) => {
   }
 });
 document.getElementById("dialog-form").addEventListener("submit", handleSubmit);
+document.getElementById("app-dialog").addEventListener("close", stopQrScanner);
 document.getElementById("dialog-close").addEventListener("click", closeDialog);
 document.getElementById("dialog-cancel").addEventListener("click", closeDialog);
+document.getElementById("dialog-fields").addEventListener("change", (event) => {
+  if (event.target.id === "qr-photo" && event.target.files?.[0]) void decodeQrImage(event.target.files[0]);
+});
 document.getElementById("vaccine-filter").addEventListener("change", renderVaccines);
 document.getElementById("finance-filter").addEventListener("change", renderTransactions);
 document.getElementById("menu-toggle").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
